@@ -4,6 +4,19 @@ import os
 import time
 import pandas as pd
 
+from prometheus_client import start_http_server, Counter, Gauge, CollectorRegistry
+
+# Create a custom registry
+registry = CollectorRegistry()
+
+# Define Prometheus metrics using the custom registry
+packets_captured = Counter('packets_captured_total', 'Total number of packets captured', registry=registry)
+anomalies_detected = Counter('anomalies_detected_total', 'Total number of anomalies detected', registry=registry)
+capture_status = Gauge('capture_status', 'Indicates if packet capture is active (1 for active, 0 for inactive)', registry=registry)
+
+# Start Prometheus server (adjust port as needed)
+start_http_server(8000, registry=registry)
+
 # Paths to your scripts
 CAPTURE_SCRIPT = 'C:/Users/lenovo/OneDrive/Desktop/Project 1/network-anomaly-new/capture/live_capture.py'  # Adjust this path if needed
 DETECT_SCRIPT = 'C:/Users/lenovo/OneDrive/Desktop/Project 1/network-anomaly-new/detection/anomaly_detection.py'  # Adjust this path if needed
@@ -42,7 +55,7 @@ def stop_capture():
 def detect_anomalies():
     try:
         result = subprocess.run(["python", DETECT_SCRIPT], capture_output=True, text=True)
-        st.text("Anomaly Detection Output:")
+        st.text("Anomaly Detection Output:\n")
         st.code(result.stdout)
     except Exception as e:
         st.error(f"An error occurred during anomaly detection: {e}")
